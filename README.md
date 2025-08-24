@@ -75,12 +75,10 @@ Finally we used `lein-tutorial` as the project name, so once the command is fini
 cd lein-tutorial/
 
 tree
-
 ├── CHANGELOG.md
 ├── LICENSE
 ├── README.md
-├── doc
-│   └── intro.md
+├── lein-tutorial.iml
 ├── project.clj
 ├── resources
 ├── src
@@ -90,7 +88,7 @@ tree
     └── lein_tutorial
         └── core_test.clj
 
-7 directories, 7 files
+6 directories, 7 files
 ```
 
 ## Exploring the `project.clj` file
@@ -123,12 +121,143 @@ For example, HikariCP from MVNRepository: https://mvnrepository.com/artifact/com
 [com.zaxxer/HikariCP "7.0.2"]
 ```
 
-Or if something is pure Clojure library you'll most likely find it on Clojars, 
+Or if something is pure Clojure library you'll most likely find it on Clojars, for example let's get the next.jdbc library from https://clojars.org/com.github.seancorfield/next.jdbc:
 
+```clojure 
+[com.github.seancorfield/next.jdbc "1.3.1048"]
+```
 
+## Most useful commands 
 
+Let's learn most useful command for everyday. 
 
-lein run vs lein trampoline run
+### Managing dependencies
+Once you've added a new dependency to `project.clj` it's magically appear in your project. 
+You'll need to use a command to pull it, although if you running any other commands (like test run), dependencies will be updated anyway. 
+
+It's still useful to know how to pull dependencies yourself:
+```shell
+lein deps
+```
+
+You'll probably some output about new dependencies added, it happens if you haven't got them already locally in the Maven `.m2` cache folder. 
+Lein will use same folder to cache them as well, so you don't need to download them multiple times. 
+
+Other related command is useful solve the Java `dependency hell` situations, it's a bit more advanced but good to know anyway.
+If you get a version conflic (like 2 dependencies are pulling different version of same third dependency) its usesul to debug. 
+
+```shell 
+lein deps :tree
+ [nrepl "1.0.0" :exclusions [[org.clojure/clojure]]]
+ [org.clojure/clojure "1.11.1"]
+   [org.clojure/core.specs.alpha "0.2.62"]
+   [org.clojure/spec.alpha "0.3.218"]
+ [org.nrepl/incomplete "0.1.0" :exclusions [[org.clojure/clojure]]]
+```
+
+Luckely for us, in our tiny project the dependency tree looks good so far!
+
+### Building project
+
+This is the bread and butter command, used in most CI/CD pipelines, the idea is to create a JAR file that will contain everything we need to run our application. 
+At this point we don't even care that the code was written in Clojure, it's a normal JAR now and we only need Java to run it (so usually that output JAR is used to build a Docker image from some Java base image).
+
+To do so we need to run:
+```shell 
+lein uberjar
+ 
+
+```
+
+And after running `tree` command you'll see a fresh JAR created in the target 
+folder `target/uberjar/lein-tutorial-0.1.0-SNAPSHOT-standalone.jar`:
+```shell 
+tree
+├── target
+│   └── uberjar
+│       ├── classes
+│       │   ├── META-INF
+│       │   │   └── maven
+│       │   │       └── lein-tutorial
+│       │   │           └── lein-tutorial
+│       │   │               └── pom.properties
+│       │   └── lein_tutorial
+│       │       ├── core$_main.class
+│       │       ├── core$fn__173.class
+│       │       ├── core$loading__6789__auto____171.class
+│       │       ├── core.class
+│       │       └── core__init.class
+│       ├── lein-tutorial-0.1.0-SNAPSHOT-standalone.jar
+│       ├── lein-tutorial-0.1.0-SNAPSHOT.jar
+│       └── stale
+│           └── leiningen.core.classpath.extract-native-dependencies
+```
+
+### Running project 
+
+You can also run the project without building the JAR first, for example for local development:
+
+```shell 
+lein run
+Hello, World!
+```
+
+It will basically execute the `-main` function from the entrypoint namespace defined in the `project.clj` config:
+```clojure
+(defn -main
+  "I don't do a whole lot ... yet."
+  [& args]
+  (println "Hello, World!"))
+```
+
+JVM is known for the slow start but actually in this case there are 2 nested JVMs started,
+one for our app and one for the Lein itself, but we can improve that by running the trampoline command:
+
+```shell 
+trampoline          Run a task without nesting the project's JVM inside Leiningen's.
+```
+
+This is the difference I'm getting on my machine:
+
+```shell 
+time lein run
+Hello, World!
+________________________________________________________
+Executed in    1.69 secs    fish           external
+   usr time    1.21 secs    0.00 micros    1.21 secs
+   sys time    0.44 secs  406.00 micros    0.44 secs
+
+time lein trampoline run
+Hello, World!
+________________________________________________________
+Executed in    1.02 secs    fish           external
+   usr time    1.18 secs    0.00 micros    1.18 secs
+   sys time    0.33 secs  398.00 micros    0.33 secs
+```
+
+### Running tests
+
+Lein includes the `clojure.test` runner by default (or you can also confire it to use some other available test runner), 
+the default is good enough for the start. 
+
+```shell 
+lein test
+
+lein test lein-tutorial.core-test
+
+lein test :only lein-tutorial.core-test/a-test
+
+FAIL in (a-test) (core_test.clj:7)
+FIXME, I fail.
+expected: (= 0 1)
+  actual: (not (= 0 1))
+
+Ran 1 tests containing 1 assertions.
+1 failures, 0 errors.
+Subprocess failed (exit code: 1)
+```
+
+We have one failing test in the project, you can figure out how to fix it, rerun the test and see a passing output. 
 
 
 ## Plugins 
