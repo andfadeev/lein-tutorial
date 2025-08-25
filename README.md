@@ -4,7 +4,7 @@ If you’re learning Clojure, you’ll soon need a tool to manage your projects.
 At the beginning, I recommend sticking with Leiningen—it simplifies setup and lets you focus on learning the language itself.
 
 Later on, it’s worth exploring the [Clojure CLI](https://clojure.org/guides/deps_and_cli)
-and deps.edn. The CLI has been gaining popularity, partly because it’s supported directly by the Clojure core team,
+and `deps.edn`. The CLI has been gaining popularity, partly because it’s supported directly by the Clojure core team,
 so you’ll likely come across it in real-world projects. It also offers some neat features,
 such as dynamic loading of libraries without restarting the REPL and support for git-based dependencies.
 
