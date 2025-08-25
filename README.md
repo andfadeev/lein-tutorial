@@ -32,10 +32,13 @@ Leiningen covers all of these out of the box, with no extra configuration requir
 
 ## Installation
 
-Lein is available in multiple package managers, so that probably should be a prefered way to install it: https://wiki.leiningen.org/Packaging
-If not it could be installed with a script. 
 
-I'm using `mise` to manage my dependencies, so I'm installing lein through plugin, also you need to install Java on your machine:
+Leiningen is available through multiple package managers, which is usually the preferred way to install it: [https://wiki.leiningen.org/Packaging](https://wiki.leiningen.org/Packaging)
+
+If that doesn’t work for you, Leiningen can also be installed via a script.
+
+Personally, I use [`mise`](https://github.com/jdx/mise) to manage my dependencies. With it, I can install Leiningen via a plugin.  
+You’ll also need Java installed on your machine:
 
 ```bash 
 mise use -g java@21
@@ -45,7 +48,7 @@ openjdk 21.0.1 2023-10-17
 OpenJDK Runtime Environment (build 21.0.1+12-29)
 OpenJDK 64-Bit Server VM (build 21.0.1+12-29, mixed mode, sharing)
 ``` 
-
+Now install Leiningen with `mise`:
 ```bash 
 mise plugins install lein https://github.com/miorimmax/asdf-lein.git
 mise use -g lein@latest
@@ -54,29 +57,25 @@ lein version
 Leiningen 2.11.2 on Java 21.0.1 OpenJDK 64-Bit Server VM
 ```
 
-Now we are ready to get started!
+That’s it — Leiningen is installed and ready to go!
 
-## Creating new project 
+## Creating a new project
 
-Now as you have Lein install, to start a new Clojure project is a easy as running a simple command:
+Once you have Leiningen installed, starting a new Clojure project is as easy as running a single command:
+
 ```shell 
 lein new app lein-tutorial
 ```
 
-So 'lein new' is a command to generate the project, `app` is the template name to use, it will create a project for a new service and it used most of the time.
-Note that there are third-party templates available, or you can create your own template if you want. 
+Here’s what each part means:
 
-```shell 
-lein new 
+- `lein new` – the command to generate a new project.
+- `app` – the template to use. This one creates a project for a standalone application or service, and it’s the most commonly used template.
+- `lein-tutorial` – the name of the project.
 
-Subtasks available:
-template   A meta-template for 'lein new' templates.
-plugin     A leiningen plugin project template.
-default    A general project template for libraries.
-app        An application project template.
-```
+Leiningen also supports third-party templates, and you can even create your own if you want more customization.
+Once the command finishes, you’ll have a new project directory named `lein-tutorial`. Let’s move inside and explore the generated structure:
 
-Finally we used `lein-tutorial` as the project name, so once the command is finished we can move to a newly created folder and explore the structure:
 ```shell 
 cd lein-tutorial/
 
@@ -99,7 +98,8 @@ tree
 
 ## Exploring the `project.clj` file
 
-The `project.clj` file is the main entry point to manage your application, let's see what we have by default:
+The `project.clj` file is the main configuration file for your project. It defines things like the project name, version, dependencies, build instructions, and more.  
+Let’s take a look at what Leiningen generates by default:
 ```clojure
 (defproject lein-tutorial "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
@@ -112,45 +112,53 @@ The `project.clj` file is the main entry point to manage your application, let's
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
 ```
+Here we see some placeholders we can change, like `:description`, `:url`, and `:license`.  
+But the most important section to pay attention to is the `:dependencies` vector.
 
-Here we see some placeholders that we can change like `description`, `url` and `licence`, but the main section we should pay attention to is the `:dependencies` array.
-Now we only have Clojure dependency itself, so let's learn how to add additional libraries to our project. 
+Right now, it only contains the Clojure dependency itself. Let’s learn how to add additional libraries to our project.
 
-There is no CLI command to do it for you, but honestly I prefer it that way, you just copy dependency string and paste it into `project.clj`. 
-Most sources like MVN repository or Clojars will have the proper Lein dependency string available, but the structure is simple:
-```clojure 
-[org.name/package-name "0.1.0-version"]
+Unlike some build tools, Leiningen doesn’t have a CLI command to add dependencies for you—and honestly, that’s a good thing. It keeps the process simple: just copy the dependency string and paste it into your `project.clj`.
+
+You’ll usually find the correct string on either **Maven Central (MVNRepository)** or **Clojars**. The structure is always the same:
+
+```clojure
+[group-id/package-name "version"]
 ```
 
-For example, HikariCP from MVNRepository: https://mvnrepository.com/artifact/com.zaxxer/HikariCP/7.0.2 will be:
-``` 
+### Example 1: From Maven Central
+If we want to add **HikariCP** (a popular JDBC connection pool), we can grab the dependency from [MVNRepository](https://mvnrepository.com/artifact/com.zaxxer/HikariCP/7.0.2):
+
+```clojure
 [com.zaxxer/HikariCP "7.0.2"]
 ```
 
-Or if something is pure Clojure library you'll most likely find it on Clojars, for example let's get the next.jdbc library from https://clojars.org/com.github.seancorfield/next.jdbc:
+### Example 2: From Clojars
+For pure Clojure libraries, you’ll usually use [Clojars](https://clojars.org/).  
+For instance, to add `next.jdbc` library:
 
-```clojure 
+```clojure
 [com.github.seancorfield/next.jdbc "1.3.1048"]
 ```
 
-## Most useful commands 
+Once added, Leiningen will automatically download these dependencies the next time you run your project or start a REPL.
 
-Let's learn most useful command for everyday. 
+## Most useful commands
+
+Let’s go over some of the commands you’ll use most often in everyday Clojure development.
 
 ### Managing dependencies
-Once you've added a new dependency to `project.clj` it's magically appear in your project. 
-You'll need to use a command to pull it, although if you running any other commands (like test run), dependencies will be updated anyway. 
+Once you’ve added a new dependency to `project.clj`, it will automatically become part of your project.  
+However, you may need to explicitly pull it down. Note that if you run other commands (like tests or running the REPL), Leiningen will automatically fetch any missing dependencies.
 
-It's still useful to know how to pull dependencies yourself:
+Still, it’s useful to know how to pull dependencies yourself:
 ```shell
 lein deps
 ```
 
-You'll probably some output about new dependencies added, it happens if you haven't got them already locally in the Maven `.m2` cache folder. 
-Lein will use same folder to cache them as well, so you don't need to download them multiple times. 
+You’ll probably see some output about new dependencies being downloaded if they aren’t already in your local Maven .m2 cache folder.
+Leiningen uses the same folder for caching, so you don’t have to download the same dependencies multiple times.
 
-Other related command is useful solve the Java `dependency hell` situations, it's a bit more advanced but good to know anyway.
-If you get a version conflic (like 2 dependencies are pulling different version of same third dependency) its usesul to debug. 
+Another related command is useful for solving Java “dependency hell” situations. This is a bit more advanced, but good to know - if two dependencies require different versions of the same library, you can debug conflicts with:
 
 ```shell 
 lein deps :tree
@@ -161,21 +169,22 @@ lein deps :tree
  [org.nrepl/incomplete "0.1.0" :exclusions [[org.clojure/clojure]]]
 ```
 
-Luckely for us, in our tiny project the dependency tree looks good so far!
+Luckily for us, in our small project the dependency tree looks clean so far!
 
-### Building project
+### Building the project
 
-This is the bread and butter command, used in most CI/CD pipelines, the idea is to create a JAR file that will contain everything we need to run our application. 
-At this point we don't even care that the code was written in Clojure, it's a normal JAR now and we only need Java to run it (so usually that output JAR is used to build a Docker image from some Java base image).
+This is the bread-and-butter command, often used in CI/CD pipelines.  
+The idea is to create a JAR file that contains everything needed to run your application.
 
-To do so we need to run:
+At this point, it doesn’t matter that the code was written in Clojure—the output is just a normal Java JAR.  
+All you need to run it is Java, which is why this JAR is often used as the basis for a Docker image built on a Java base image.
+
+To build the project, run:
 ```shell 
 lein uberjar
- 
-
 ```
 
-And after running `tree` command you'll see a fresh JAR created in the target 
+After running `tree` command you'll see a fresh JAR created in the target 
 folder `target/uberjar/lein-tutorial-0.1.0-SNAPSHOT-standalone.jar`:
 ```shell 
 tree
@@ -215,11 +224,11 @@ It will basically execute the `-main` function from the entrypoint namespace def
   (println "Hello, World!"))
 ```
 
-JVM is known for the slow start but actually in this case there are 2 nested JVMs started,
-one for our app and one for the Lein itself, but we can improve that by running the trampoline command:
+The JVM is known for its slow startup, and in this case, two nested JVMs are started—one for Leiningen itself and one for your application.
+We can improve startup time by using the `trampoline` command:
 
 ```shell 
-trampoline          Run a task without nesting the project's JVM inside Leiningen's.
+trampoline Run a task without nesting the project's JVM inside Leiningen's.
 ```
 
 This is the difference I'm getting on my machine:
@@ -242,8 +251,10 @@ Executed in    1.02 secs    fish           external
 
 ### Running tests
 
-Lein includes the `clojure.test` runner by default (or you can also confire it to use some other available test runner), 
-the default is good enough for the start. 
+Leiningen includes the `clojure.test` runner by default, though you can configure it to use other test runners if needed.  
+For starting out, the default setup is perfectly fine.
+
+To run your tests, simply execute:
 
 ```shell 
 lein test
@@ -262,16 +273,18 @@ Ran 1 tests containing 1 assertions.
 Subprocess failed (exit code: 1)
 ```
 
-We have one failing test in the project, you can figure out how to fix it, rerun the test and see a passing output. 
-
+If you have a failing test in the project, try fixing it, then rerun the command to see the passing output.
 
 ## Plugins 
-There are tons of plugins available for different tasks, and for a long time it was a go-to way to add linters and formatters to the project. 
-Nowadays, most of the tools are available as native binaries, due to the popularity of the Babashka project and GraalVM.
-So using plugins in Lein now is less common and you should still probably know about that option. Let's say we 
-want to add popular formatter `cljfmt`: https://github.com/weavejester/cljfmt
+Leiningen has a rich ecosystem of plugins for different tasks.  
+For a long time, plugins were the go-to way to add linters, formatters, and other development tools to your project.
 
-We need to add this line into our `project.clj` or if you already have some plugins to extend that array with a new entry:
+Nowadays, many tools are available as standalone binaries, thanks to projects like Babashka and GraalVM.  
+Still, it’s useful to know how to use plugins in Leiningen.
+
+For example, let’s add the popular code formatter [`cljfmt`](https://github.com/weavejester/cljfmt).  
+Add the following line to your `project.clj` inside the `:plugins` vector (or extend the existing vector if you already have plugins):
+
 ```clojure 
 :plugins [[dev.weavejester/lein-cljfmt "0.13.1"]]
 ```
@@ -284,13 +297,11 @@ All source files formatted correctly
 
 ## Conclusion
 
-I think Lein still has its own place in the Clojure ecosystem and I personally enjoy using it a lot. 
-For beginners, I definitely suggest start with Lein and then explore tool.deps and Clojure CLI later. 
-Don't feel like you are using something deprecated, it's doing its job and doing it well - and definitely 
-provides all the features for building your Clojure application.
+Leiningen still has a strong place in the Clojure ecosystem, and I personally enjoy using it a lot.  
+For beginners, I definitely recommend starting with Leiningen, and then exploring `tool.deps` and the Clojure CLI later.
 
-At the end I'd like to share a sample `project.clj` file with lot's properties, I usually use it as a reference: https://codeberg.org/leiningen/leiningen/src/branch/stable/sample.project.clj
+Don’t worry about using something “deprecated” — Leiningen does its job very well and provides all the features you need to build a Clojure application.
 
-There is also an official tutorial that worth reading: https://leiningen.org/tutorial.html
+For reference, here’s a sample `project.clj` file with many properties and settings: [project.clj](https://codeberg.org/leiningen/leiningen/src/branch/stable/sample.project.clj)
 
-
+There’s also an official tutorial that’s worth reading: [Leiningen Tutorial](https://leiningen.org/tutorial.html)
