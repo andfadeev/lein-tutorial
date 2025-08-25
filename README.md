@@ -1,28 +1,34 @@
 # Getting Started with Leiningen: A Beginner’s Guide
 
-If you are learning Clojure you will pretty soon need a tool to manage your projects. 
-I would suggest to stick to Leiningen for a while to simplify your learning. In the future it's still useful to explore Clojure CLI (LINK HERE)
-and `deps.edn`. It's getting more popular due to support from language developers and it's high chance that you will encounter it in a real project
-But as a beginner definitely stick with Lein for a while. 
+If you’re learning Clojure, you’ll soon need a tool to manage your projects.
+At the beginning, I recommend sticking with Leiningen—it simplifies setup and lets you focus on learning the language itself.
 
-## History
+Later on, it’s worth exploring the [Clojure CLI](https://clojure.org/guides/deps_and_cli)
+and deps.edn. The CLI has been gaining popularity, partly because it’s supported directly by the Clojure core team,
+so you’ll likely come across it in real-world projects. It also offers some neat features,
+such as dynamic loading of libraries without restarting the REPL and support for git-based dependencies.
 
-Once clojure was released it didn't have any tooling support for buildking projects and managing dependencies, so I was basically do it yourself. 
+But as a beginner, starting with Leiningen will give you the smoothest experience.
 
-I've checked GitHub history of Leinengen project and found the first commit from 1st November 2009 (https://github.com/technomancy/leiningen/commit/88b53602f744584cb434346d868629100448ff59)
+## A bit of history
 
-And it quickly gained traction, so when I joined Clojure community (around 12 years ago) lein was already a de-facto standard. 
+When Clojure was first released, there was no tooling support for building projects or managing dependencies—it was basically *do it yourself*.
 
-There was also a competitor project Boot at that time, but frankly speaking I never understood why we needed that and today we can say that that project is dead. 
+I checked the GitHub history of the Leiningen project and found its very first commit from [November 1st, 2009](https://github.com/technomancy/leiningen/commit/88b53602f744584cb434346d868629100448ff59).
 
-So it a nutshell what do we need from the tool:
-- dependencies management (you add somewhere a new java or clojure dependency and the tool downloads it and makes it available on the classpath)
-- building project (we want some kind of a Jar as the output, so we can package it as a DOcker image and deploy our service)
-- running tests 
-- running project (it's usually less common, for local development you'd probably start REPL and run you app from it, for production, probably the DOcker iamge with Java and Jar inside, although I've seen cases when projects where deploy with DOcker image containing Lein and starting the app without precompiling Java)
-- running REPL
+Leiningen quickly gained traction. By the time I joined the Clojure community (around 12 years ago), it had already become the de facto standard.
 
-Leiningen ticks all the boxes without any custom configuration, so let's get started and see it in action. 
+There was also a competing project called [Boot](https://github.com/boot-clj/boot) at that time. Honestly, I never quite understood the need for it, and today we can safely say the project is no longer active.
+
+So, in a nutshell, what do we actually need from a build tool?
+
+- Dependency management – add a new Java or Clojure library, and the tool downloads it and makes it available on the classpath.
+- Building the project – produce a JAR file so we can package it into a Docker image and deploy our service.
+- Running tests – execute unit and integration tests.
+- Running the project – less common in practice. For local development, you’d typically start a REPL and run the app from there. For production, you’d normally deploy a Docker image containing Java and your JAR, though I’ve seen projects deployed with Leiningen inside the Docker image, starting the app without precompiling.
+- Running a REPL – start an interactive session for development, in most cases it will be managed by your editor or IDE, so you don't need to directly use Leiningen for it.
+
+Leiningen covers all of these out of the box, with no extra configuration required. So let’s dive in and see it in action!
 
 ## Installation
 
@@ -205,8 +211,7 @@ Hello, World!
 It will basically execute the `-main` function from the entrypoint namespace defined in the `project.clj` config:
 ```clojure
 (defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
+  []
   (println "Hello, World!"))
 ```
 
